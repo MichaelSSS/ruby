@@ -32,4 +32,20 @@ class UsersIndexTest < ActionDispatch::IntegrationTest
     end
   end
   
+  test 'index should show only activated users' do
+    log_in_as @admin
+    get users_path
+    
+    @user = User.limit(1).offset(5).first
+    assert_select 'a[href=?]', user_path(@user)
+    
+    @user.toggle!(:activated)
+    assert_not @user.reload.activated
+
+    get users_path
+    assert_select 'a[href=?]', user_path(@user), count: 0
+
+    get user_path(@user)
+    assert_redirected_to root_path
+  end
 end
