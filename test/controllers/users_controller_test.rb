@@ -55,4 +55,13 @@ class UsersControllerTest < ActionController::TestCase
     end
     assert_redirected_to root_url
   end
+  
+  test 'admin can not be edited' do
+    log_in_as @user2
+    assert_not @user2.admin?
+    patch :update, id: @user2, user: {
+      admin: true
+    }
+    assert_not @user2.reload.admin?
+  end
 end
