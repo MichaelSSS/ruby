@@ -16,7 +16,26 @@ class UsersProfileTest < ActionDispatch::IntegrationTest
     assert_match @user.microposts.count.to_s, response.body
     assert_select 'div.pagination'
     @user.microposts.paginate(page: 1, per_page: 10).each do |micropost|
-      assert_match micropost.content, response.body
+      assert_match CGI.escapeHTML(micropost.content), response.body
+    end
+    assert_select "a[href=#{following_user_path(@user)}]" do |a|
+      assert a.count
+      assert_match @user.active_relationships.count.to_s, a.first.to_s
+    end
+    assert_select "a[href=#{followers_user_path(@user)}]" do |a|
+      assert a.count
+      assert_match @user.passive_relationships.count.to_s, a.first.to_s
+    end
+    
+    log_in_as @user
+    get root_path
+    assert_select "a[href=#{following_user_path(@user)}]" do |a|
+      assert a.count
+      assert_match @user.active_relationships.count.to_s, a.first.to_s
+    end
+    assert_select "a[href=#{followers_user_path(@user)}]" do |a|
+      assert a.count
+      assert_match @user.passive_relationships.count.to_s, a.first.to_s
     end
   end
 end
