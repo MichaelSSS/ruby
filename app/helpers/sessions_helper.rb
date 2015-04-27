@@ -11,12 +11,12 @@ module SessionsHelper
   
   def current_user
     if (id = session[:user_id])
-      @user ||= User.find_by(id: id)
+      @current_user ||= User.find_by(id: id)
     elsif (id = cookies.signed[:user_id])
       user = User.find_by(id: id)
       if (user && user.authenticated?(:remember, cookies[:remember_token]))
         log_in user
-        @user = user
+        @current_user = user
       end
     end
   end
@@ -34,11 +34,11 @@ module SessionsHelper
   def log_out
     forget(current_user)
     session.delete(:user_id)
-    @user = nil
+    @current_user = nil
   end
   
   def current_user?(user)
-    user.id = current_user.id
+    user == current_user
   end
   
   def store_location
